@@ -1,0 +1,27 @@
+name: Deploy Unity Build to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Запускать при пуше в ветку main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Fix Gzip Encoding 🛠️
+        run: |
+          # Переименовываем файлы, убирая .gz
+          find ./Build -type f -name "*.gz" -exec sh -c 'mv "$0" "${0%.gz}"' {} \;
+          # Заменяем упоминания .gz в файле index.html
+          sed -i 's/\.gz//g' index.html
+
+      - name: Deploy 🚀
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: . # Публиковать содержимое всего репозитория
+          # publish_branch: gh-pages # По умолчанию публикует в ветку gh-pages
